@@ -1,0 +1,36 @@
+enabled: true
+replicaCount: 1
+
+image:
+  registry: docker.io
+  repository: library/rabbitmq
+  tag: 3.13.3-management
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5672
+  managementPort: 15672
+
+persistence:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  storageClass: ""
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}
+
+auth:
+  existingSecret: ""
+  username: ""
+  password: ""
+  erlangCookie: ""
+
+defaultVhost: taiga
+extraConfiguration: ""

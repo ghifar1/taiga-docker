@@ -1,0 +1,32 @@
+enabled: true
+
+image:
+  registry: docker.io
+  repository: library/postgres
+  tag: "15.5"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5432
+
+persistence:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+  storageClass: ""
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}
+
+auth:
+  enablePostgresUser: true
+  postgresPassword: taiga
+  username: taiga
+  password: taiga
+  database: taiga

@@ -29,7 +29,10 @@ spec:
           - name: POSTGRES_HOST
             value: {{ default (printf "%s-postgresql" (include "taiga.fullname" .)) .Values.postgresql.host | quote }}
           - name: TAIGA_SECRET_KEY
-            value: "{{ .Values.secretKey }}"
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.appSecretName" . }}
+                key: secret-key
       restartPolicy: Never
       volumes:
         - name: createinitialuser

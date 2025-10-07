@@ -18,16 +18,16 @@ sources:
 - https://github.com/taigaio/taiga-docker
 dependencies:
 - name: rabbitmq
-  version: ^12.1.2
-  repository: https://charts.bitnami.com/bitnami
+  version: 0.1.0
+  repository: file://charts/rabbitmq
   alias: async-rabbitmq
   condition: rabbitmq.enabled
 - name: rabbitmq
-  version: ^12.1.2
-  repository: https://charts.bitnami.com/bitnami
+  version: 0.1.0
+  repository: file://charts/rabbitmq
   alias: events-rabbitmq
   condition: rabbitmq.enabled
 - name: postgresql
-  version: ^12.10.0
-  repository: https://charts.bitnami.com/bitnami
+  version: 0.1.0
+  repository: file://charts/postgresql
   condition: postgresql.enabled

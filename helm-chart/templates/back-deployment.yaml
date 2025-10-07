@@ -48,7 +48,10 @@ spec:
           - name: POSTGRES_HOST
             value: {{ default (printf "%s-postgresql" (include "taiga.fullname" .)) .Values.postgresql.host | quote }}
           - name: TAIGA_SECRET_KEY
-            value: "{{ .Values.secretKey }}"
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.appSecretName" . }}
+                key: secret-key
           {{ if .Values.ingress.enabled }}
           - name: TAIGA_SITES_DOMAIN
             value: "{{ .Values.ingress.hostname }}"
@@ -100,9 +103,15 @@ spec:
             value: "{{ .Values.smtp.password }}"
           {{ end }}
           - name: RABBITMQ_USER
-            value: {{ .Values.async.rabbitmq.auth.username }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.rabbitmqSecretName" (dict "root" . "alias" "async-rabbitmq") }}
+                key: username
           - name: RABBITMQ_PASS
-            value: {{ .Values.async.rabbitmq.auth.password }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.rabbitmqSecretName" (dict "root" . "alias" "async-rabbitmq") }}
+                key: password
           - name: ENABLE_TELEMETRY
             {{- if .Values.enableTelemetry }}
             value: "True"
@@ -235,7 +244,10 @@ spec:
           - name: POSTGRES_HOST
             value: {{ default (printf "%s-postgresql" (include "taiga.fullname" .)) .Values.postgresql.host | quote }}
           - name: TAIGA_SECRET_KEY
-            value: "{{ .Values.secretKey }}"
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.appSecretName" . }}
+                key: secret-key
           {{ if .Values.ingress.enabled }}
           - name: TAIGA_SITES_DOMAIN
             value: "{{ .Values.ingress.hostname }}"
@@ -279,9 +291,15 @@ spec:
             value: "{{ .Values.smtp.password }}"
           {{ end }}
           - name: RABBITMQ_USER
-            value: {{ .Values.async.rabbitmq.auth.username }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.rabbitmqSecretName" (dict "root" . "alias" "async-rabbitmq") }}
+                key: username
           - name: RABBITMQ_PASS
-            value: {{ .Values.async.rabbitmq.auth.password }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.rabbitmqSecretName" (dict "root" . "alias" "async-rabbitmq") }}
+                key: password
           - name: ENABLE_TELEMETRY
             {{- if .Values.enableTelemetry }}
             value: "True"

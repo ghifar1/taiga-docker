@@ -9,22 +9,8 @@
 #   storageClass: myStorageClass
 
 ## Taiga secret key
-##
-# TODO: Set to null by default or use random value by default and store in secret
-secretKey: 9%pno@m688el28@2+^y4v^&6wluqk-g#j#d7$dsjtht)o30dn1
-
-# TODO: The email settings seem to be unused, compare smtp below
-## Email settings
-##
-email:
-  enabled: false
-  from: no-reply@example.com
-  useTls: false
-  useSsl: false
-  host: "smtp.host.example.com"
-  port: 587
-  user: "user"
-  password: "password"
+## Provide your own value or leave empty to let the chart generate and store one in a Secret.
+secretKey: ""
 
 ## Telemetry settings
 ##
@@ -81,15 +67,7 @@ trelloImporter:
 ## Create initial user with credentials admin/123123
 ## ref: https://taigaio.github.io/taiga-doc/dist/setup-production.html
 ##
-# TODO: set to false by default or create with a random password which is stored in a secret
-# or allow to pass in the data for username and secret
-createInitialUser: true
-
-## Create initial templates
-## ref: https://taigaio.github.io/taiga-doc/dist/setup-production.html
-##
-# TODO: This values seems to be unused
-createInitialTemplates: false
+createInitialUser: false
 
 back:
   ## Taiga image version
@@ -225,14 +203,6 @@ async:
     # pullSecrets:
     #   - myRegistryKeySecretName
 
-  ## async-taiga rabbitmq credentials
-  ## Must match to async-rabbitmq.auth.username and async-rabbitmq.auth.password
-  ## I don't use async-rabbitmq values because this bug: https://github.com/helm/helm/issues/2192
-  rabbitmq:
-    auth:
-      username: taiga
-      password: taiga
-
   ## Define the number of pods the deployment will create
   ## Do not change unless your persistent volume allows more than one writer, ie NFS
   ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
@@ -346,14 +316,6 @@ events:
     ##
     # pullSecrets:
     #   - myRegistryKeySecretName
-
-  ## events-taiga rabbitmq credentials
-  ## Must match to events-rabbitmq.auth.username and events-rabbitmq.auth.password
-  ## I don't use events-rabbitmq values because this bug: https://github.com/helm/helm/issues/2192
-  rabbitmq:
-    auth:
-      username: taiga
-      password: taiga
 
   ## Pod Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
@@ -903,11 +865,11 @@ persistence:
 ## This does configure either the bundled PostgreSQL instance or it does
 ## configure the postgresql access details if "enabled" is set to "false".
 ##
-## https://github.com/helm/charts/blob/master/stable/postgresql/values.yaml
-##
 postgresql:
   image:
-    tag: 13.10.0-debian-11-r2
+    registry: docker.io
+    repository: library/postgres
+    tag: "15.5"
 
   ## Whether to deploy a PostgreSQL server to satisfy the applications database requirements. To use an external database set this to false and configure the externalDatabase parameters
   enabled: true
@@ -916,10 +878,6 @@ postgresql:
   ## bundled PostgreSQL instance.
   host: null
 
-  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/postgresql#setting-the-root-password-on-first-run
-  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/postgresql#creating-a-database-on-first-run
-  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/postgresql#creating-a-database-user-on-first-run
-  ##
   auth:
     ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
     ##
@@ -947,59 +905,51 @@ postgresql:
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
 
-    ## postgresql data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
+    ## If undefined (the default) or set to null, no storageClassName spec is set.
     ##
     # storageClass: "-"
-    accessMode: ReadWriteOnce
+    accessModes:
+      - ReadWriteOnce
     size: 1Gi
 
 ## async Rabbitmq chart configuration
 ##
-## https://artifacthub.io/packages/helm/bitnami/rabbitmq?modal=values-schema
+## See charts/rabbitmq/values.yaml for all configuration options.
 ##
 async-rabbitmq:
   # Whether to deploy a Rabbitmq server to satisfy the applications messaging services. To use an external rabbitmq set this to false and configure the externalRabbitmq parameters
   enabled: true
 
-  ## Create a rabbitmq username
+  ## Credentials are generated automatically when left blank.
   auth:
-    # TODO: Remove default values for secrets
-    username: taiga
-    password: taiga
+    username: ""
+    password: ""
+    erlangCookie: ""
 
-    # TODO: Remove default values for secrets
-    erlangCookie: h2SNqvsJRJAeSRUlkubZTlkRB0OJgYSu
-
+  defaultVhost: taiga
   extraConfiguration: |-
-    default_vhost = taiga
     default_permissions.configure = .*
     default_permissions.read = .*
     default_permissions.write = .*
 
 ## events Rabbitmq chart configuration
 ##
-## https://artifacthub.io/packages/helm/bitnami/rabbitmq?modal=values-schema
+## See charts/rabbitmq/values.yaml for all configuration options.
 ##
 events-rabbitmq:
   # Whether to deploy a Rabbitmq server to satisfy the applications messaging services. To use an external rabbitmq set this to false and configure the externalRabbitmq parameters
   enabled: true
 
-  ## Create a rabbitmq username
+  ## Credentials are generated automatically when left blank.
   auth:
-    # TODO: Remove default values for secrets
-    username: taiga
-    password: taiga
+    username: ""
+    password: ""
+    erlangCookie: ""
 
-    # TODO: Remove default values for secrets
-    erlangCookie: h2SNqvsJRJAeSRUlkubZTlkRB0OJgYSu
-
+  defaultVhost: taiga
   extraConfiguration: |-
-    default_vhost = taiga
     default_permissions.configure = .*
     default_permissions.read = .*
     default_permissions.write = .*

@@ -40,11 +40,20 @@ spec:
         {{- end }}
         env:
           - name: TAIGA_SECRET_KEY
-            value: "{{ .Values.secretKey }}"
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.appSecretName" . }}
+                key: secret-key
           - name: RABBITMQ_USER
-            value: {{ .Values.events.rabbitmq.auth.username }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.rabbitmqSecretName" (dict "root" . "alias" "events-rabbitmq") }}
+                key: username
           - name: RABBITMQ_PASS
-            value: {{ .Values.events.rabbitmq.auth.password }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.rabbitmqSecretName" (dict "root" . "alias" "events-rabbitmq") }}
+                key: password
           {{- if .Values.events.extraVars }}
           {{- toYaml .Values.events.extraVars | nindent 12 }}
           {{- end }}

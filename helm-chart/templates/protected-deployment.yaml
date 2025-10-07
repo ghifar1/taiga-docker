@@ -40,7 +40,10 @@ spec:
         {{- end }}
         env:
           - name: SECRET_KEY
-            value: "{{ .Values.secretKey }}"
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.appSecretName" . }}
+                key: secret-key
           - name: MAX_AGE
             value: "{{ .Values.protected.maxAge }}"
           {{- if .Values.protected.extraVars }}

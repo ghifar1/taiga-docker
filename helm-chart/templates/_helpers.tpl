@@ -532,6 +532,49 @@ Create the name of the service account to use
 {{- end -}}
 
 
+{{/*
+Return the name of the application secret that stores shared credentials.
+*/}}
+{{- define "taiga.appSecretName" -}}
+{{- printf "%s-app" (include "taiga.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Resolve the Taiga secret key, keeping existing data when available.
+*/}}
+{{- define "taiga.secretKeyValue" -}}
+{{- if .Values.secretKey -}}
+{{- .Values.secretKey -}}
+{{- else -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "taiga.appSecretName" .) -}}
+{{- if $secret -}}
+{{- index $secret.data "secret-key" | b64dec -}}
+{{- else -}}
+{{- randAlphaNum 64 -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the RabbitMQ auth secret name for the provided dependency alias.
+*/}}
+{{- define "taiga.rabbitmqSecretName" -}}
+{{- $root := index . "root" -}}
+{{- $alias := index . "alias" -}}
+{{- $subVals := index $root.Values $alias | default (dict) -}}
+{{- $name := default $alias (index $subVals "nameOverride") -}}
+{{- $data := dict "fullname" "" -}}
+{{- if and (hasKey $subVals "fullnameOverride") (ne (index $subVals "fullnameOverride") "") -}}
+  {{- $_ := set $data "fullname" ((index $subVals "fullnameOverride") | trunc 63 | trimSuffix "-") -}}
+{{- else if contains $name $root.Release.Name -}}
+  {{- $_ := set $data "fullname" ($root.Release.Name | trunc 63 | trimSuffix "-") -}}
+{{- else -}}
+  {{- $_ := set $data "fullname" (printf "%s-%s" $root.Release.Name $name | trunc 63 | trimSuffix "-") -}}
+{{- end -}}
+{{- printf "%s-auth" (index $data "fullname") | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+
 
 
 
