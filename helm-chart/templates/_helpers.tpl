@@ -556,22 +556,53 @@ Resolve the Taiga secret key, keeping existing data when available.
 {{- end -}}
 
 {{/*
+Return the name of the PostgreSQL auth secret, honoring overrides and existing secrets.
+*/}}
+{{- define "taiga.postgresqlSecretName" -}}
+{{- $pgVals := .Values.postgresql | default (dict) -}}
+{{- $auth := index $pgVals "auth" | default (dict) -}}
+{{- $existing := index $auth "existingSecret" | default "" -}}
+{{- if and $existing (ne $existing "") -}}
+  {{- $existing | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+  {{- $fullnameOverride := index $pgVals "fullnameOverride" | default "" -}}
+  {{- if ne $fullnameOverride "" -}}
+    {{- printf "%s-auth" ($fullnameOverride | trunc 63 | trimSuffix "-") | trunc 63 | trimSuffix "-" -}}
+  {{- else -}}
+    {{- $nameOverride := index $pgVals "nameOverride" | default "" -}}
+    {{- $name := "" -}}
+    {{- if ne $nameOverride "" -}}
+      {{- $name = $nameOverride | trunc 63 | trimSuffix "-" -}}
+    {{- else -}}
+      {{- $name = "postgresql" -}}
+    {{- end -}}
+    {{- printf "%s-%s-auth" (.Release.Name | trunc 63 | trimSuffix "-") $name | trunc 63 | trimSuffix "-" -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the RabbitMQ auth secret name for the provided dependency alias.
 */}}
 {{- define "taiga.rabbitmqSecretName" -}}
 {{- $root := index . "root" -}}
 {{- $alias := index . "alias" -}}
 {{- $subVals := index $root.Values $alias | default (dict) -}}
-{{- $name := default $alias (index $subVals "nameOverride") -}}
-{{- $data := dict "fullname" "" -}}
-{{- if and (hasKey $subVals "fullnameOverride") (ne (index $subVals "fullnameOverride") "") -}}
-  {{- $_ := set $data "fullname" ((index $subVals "fullnameOverride") | trunc 63 | trimSuffix "-") -}}
-{{- else if contains $name $root.Release.Name -}}
-  {{- $_ := set $data "fullname" ($root.Release.Name | trunc 63 | trimSuffix "-") -}}
+{{- $auth := index $subVals "auth" | default (dict) -}}
+{{- $existing := index $auth "existingSecret" | default "" -}}
+{{- if and $existing (ne $existing "") -}}
+  {{- $existing | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-  {{- $_ := set $data "fullname" (printf "%s-%s" $root.Release.Name $name | trunc 63 | trimSuffix "-") -}}
+  {{- include "taiga.rabbitmqSharedSecretName" $root -}}
 {{- end -}}
-{{- printf "%s-auth" (index $data "fullname") | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+
+{{/*
+Return the shared RabbitMQ secret name used across Taiga components.
+*/}}
+{{- define "taiga.rabbitmqSharedSecretName" -}}
+{{- printf "%s-rabbitmq-auth" .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 

@@ -921,6 +921,7 @@ postgresql:
 async-rabbitmq:
   # Whether to deploy a Rabbitmq server to satisfy the applications messaging services. To use an external rabbitmq set this to false and configure the externalRabbitmq parameters
   enabled: true
+  manageSecret: true
 
   ## Credentials are generated automatically when left blank.
   auth:
@@ -941,6 +942,7 @@ async-rabbitmq:
 events-rabbitmq:
   # Whether to deploy a Rabbitmq server to satisfy the applications messaging services. To use an external rabbitmq set this to false and configure the externalRabbitmq parameters
   enabled: true
+  manageSecret: false
 
   ## Credentials are generated automatically when left blank.
   auth:

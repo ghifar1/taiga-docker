@@ -26,6 +26,19 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- printf "%s-auth" (include "rabbitmq.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "rabbitmq.userSecretName" -}}
+{{- if .Values.auth.existingSecret -}}
+{{- .Values.auth.existingSecret | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $shared := include "taiga.rabbitmqSharedSecretName" . -}}
+{{- if $shared -}}
+{{- $shared | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- include "rabbitmq.secretName" . -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "rabbitmq.image" -}}
 {{- if .Values.image.registry -}}
 {{- printf "%s/%s:%s" .Values.image.registry .Values.image.repository .Values.image.tag -}}
@@ -38,7 +51,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.auth.username -}}
 {{- .Values.auth.username -}}
 {{- else -}}
-{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "rabbitmq.secretName" .) -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "rabbitmq.userSecretName" .) -}}
 {{- if $secret -}}
 {{- index $secret.data "username" | b64dec -}}
 {{- else -}}
@@ -51,7 +64,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.auth.password -}}
 {{- .Values.auth.password -}}
 {{- else -}}
-{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "rabbitmq.secretName" .) -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "rabbitmq.userSecretName" .) -}}
 {{- if $secret -}}
 {{- index $secret.data "password" | b64dec -}}
 {{- else -}}
@@ -64,7 +77,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.auth.erlangCookie -}}
 {{- .Values.auth.erlangCookie -}}
 {{- else -}}
-{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "rabbitmq.secretName" .) -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace (include "rabbitmq.userSecretName" .) -}}
 {{- if $secret -}}
 {{- index $secret.data "erlang-cookie" | b64dec -}}
 {{- else -}}

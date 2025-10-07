@@ -19,13 +19,37 @@ spec:
         volumeMounts:
           - name: createinitialuser
             mountPath: /scripts
+        {{- $pgAuth := (index .Values.postgresql "auth") | default (dict) }}
+        {{- $pgExisting := index $pgAuth "existingSecret" | default "" }}
+        {{- $usePgSecret := or .Values.postgresql.enabled (and $pgExisting (ne $pgExisting "")) }}
         env:
           - name: POSTGRES_DB
+            {{- if $usePgSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.postgresqlSecretName" . }}
+                key: database
+            {{- else }}
             value: "{{ .Values.postgresql.auth.database }}"
+            {{- end }}
           - name: POSTGRES_USER
+            {{- if $usePgSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.postgresqlSecretName" . }}
+                key: username
+            {{- else }}
             value: "{{ .Values.postgresql.auth.username }}"
+            {{- end }}
           - name: POSTGRES_PASSWORD
+            {{- if $usePgSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "taiga.postgresqlSecretName" . }}
+                key: password
+            {{- else }}
             value: "{{ .Values.postgresql.auth.password }}"
+            {{- end }}
           - name: POSTGRES_HOST
             value: {{ default (printf "%s-postgresql" (include "taiga.fullname" .)) .Values.postgresql.host | quote }}
           - name: TAIGA_SECRET_KEY
